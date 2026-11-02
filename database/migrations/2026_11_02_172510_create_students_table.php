@@ -6,33 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Pivot table between students and courses (many-to-many).
+     * It also holds the marks the lecturer enters.
+     */
     public function up(): void
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('course_registrations', function (Blueprint $table) {
             $table->id();
-            // Login account of the student (one-to-one).
-            $table->foreignId('user_id')->nullable()->unique()->constrained()->cascadeOnDelete();
-            // Programme the student is enrolled on (one programme has many students).
-            $table->foreignId('programme_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('course_id')->constrained()->cascadeOnDelete();
+            $table->string('academic_year')->default('2026/2027');
+            $table->unsignedTinyInteger('semester')->default(1);
+            $table->string('status')->default('Registered');      // Registered | Completed
 
-            $table->string('student_number')->nullable()->unique(); // given when approved
-            $table->string('registration_number')->nullable()->unique();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->string('gender')->nullable();
-            $table->date('date_of_birth')->nullable();
-            $table->unsignedTinyInteger('year_of_study')->default(1);
-            $table->string('study_mode')->default('Day');         // Day | Evening | Weekend
-            $table->string('sponsorship')->default('Private');    // Private | Government | Scholarship
-            $table->string('status')->default('Active');          // Active | Suspended | Inactive | Graduated
+            $table->decimal('coursework_mark', 5, 2)->nullable(); // out of 30
+            $table->decimal('exam_mark', 5, 2)->nullable();       // out of 70
+            $table->string('grade', 3)->nullable();
+
             $table->timestamps();
+
+            // A student can only register for the same course once.
+            $table->unique(['student_id', 'course_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('course_registrations');
     }
 };
