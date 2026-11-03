@@ -1,45 +1,46 @@
+{{--
+    Main portal layout (used by <x-app-layout>).
+    Header (top bar), navigation (sidebar), content section and footer
+    are split into partials so every page re-uses them.
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<head>
+    @include('partials.head')
+    @livewireStyles
+</head>
+<body class="bg-canvas text-slate-900 font-sans antialiased min-h-screen">
+    <x-banner />
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    {{-- Sidebar toggle for small screens (checkbox, no JavaScript) --}}
+    <input type="checkbox" id="sidebar-toggle" class="peer hidden">
+    <label for="sidebar-toggle" class="fixed inset-0 bg-slate-900/40 z-30 hidden peer-checked:block lg:!hidden"></label>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    {{-- Navigation --}}
+    @include('partials.sidebar')
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <div class="lg:pl-[260px] min-h-screen flex flex-col">
+        {{-- Header --}}
+        @include('partials.topbar')
 
-        <!-- Styles -->
-        @livewireStyles
-    </head>
-    <body class="font-sans antialiased">
-        <x-banner />
+        {{-- Content --}}
+        <main class="flex-1 px-4 sm:px-8 py-8 animate-rise">
+            @include('partials.flash')
 
-        <div class="min-h-screen bg-gray-100">
-            @livewire('navigation-menu')
+            @isset($header)
+                {{-- Jetstream pages (profile, API tokens) pass a header slot --}}
+                <div class="mb-6 [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:tracking-tight [&_h2]:text-slate-900">{{ $header }}</div>
+            @endisset
 
-            <!-- Page Heading -->
-            @if (isset($header))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endif
+            {{ $slot }}
+        </main>
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-        </div>
+        {{-- Footer --}}
+        @include('partials.footer')
+    </div>
 
-        @stack('modals')
-
-        @livewireScripts
-    </body>
+    @stack('modals')
+    @livewireScripts
+    @stack('scripts')
+</body>
 </html>
