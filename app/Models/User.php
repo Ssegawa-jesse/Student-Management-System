@@ -7,6 +7,9 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Permission\Traits\HasRoles;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
@@ -19,6 +22,9 @@ class User extends Authenticatable
     use HasFactory;
 
     use HasProfilePhoto;
+    use HasProfilePhoto;
+    use HasRoles;
+    use Notifiable;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
@@ -52,7 +58,7 @@ class User extends Authenticatable
      */
     protected $appends = [
         'profile_photo_url',
-    ];
+       ];
 
     /**
      * Get the attributes that should be cast.
@@ -65,5 +71,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function student(): HasOne
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    public function taughtCourses(): HasMany
+    {
+        return $this->hasMany(Course::class, 'lecturer_id');
     }
 }

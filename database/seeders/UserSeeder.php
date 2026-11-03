@@ -2,59 +2,37 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\PermissionRegistrar;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Every permission in the system, grouped by role.
-     * firstOrCreate + syncPermissions means running the seeder again
-     * never creates duplicates.
-     */
-    public const PERMISSIONS = [
-        // Administrator (Registrar)
-        'view students', 'create students', 'edit students', 'delete students',
-        'view courses', 'create courses', 'edit courses', 'delete courses',
-        'manage programmes', 'manage lecturers',
-        'view registrations', 'manage registrations',
-        'approve registrations', 'manage users', 'view reports',
+    public const PASSWORD = '12345678';
 
-        // Lecturer
-        'view assigned courses', 'view course students', 'enter marks',
-
-        // Student
-        'view available courses', 'register courses', 'view own registrations', 'view own results',
+    public const USERS = [
+        ['name' => 'System Administrator', 'email' => '2400725284@mubs.ac.ug', 'role' => 'admin'],
+        ['name' => 'Dr. Moses Kato', 'email' => 'moses.kato@sms.test', 'role' => 'lecturer'],
+        ['name' => 'Ms. Ruth Atim', 'email' => 'ruth.atim@sms.test', 'role' => 'lecturer'],
+        ['name' => 'Sarah Nakato', 'email' => 'sarah.nakato@students.sms.test', 'role' => 'student'],
+        ['name' => 'John Okello', 'email' => 'john.okello@students.sms.test', 'role' => 'student'],
+        ['name' => 'Aisha Namuli', 'email' => 'aisha.namuli@students.sms.test', 'role' => 'student'],
+        ['name' => 'Kevin Mugabi', 'email' => 'kevin.mugabi@students.sms.test', 'role' => 'student'],
+        ['name' => 'Patience Achan', 'email' => 'patience.achan@students.sms.test', 'role' => 'student'],
     ];
 
     public function run(): void
     {
-        // Reset cached roles and permissions
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        foreach (self::USERS as $data) {
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make(self::PASSWORD),
+                ]
+            );
 
-        foreach (self::PERMISSIONS as $permission) {
-            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+            $user->syncRoles([$data['role']]);
         }
-
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $admin->syncPermissions([
-            'view students', 'create students', 'edit students', 'delete students',
-            'view courses', 'create courses', 'edit courses', 'delete courses',
-            'manage programmes', 'manage lecturers',
-            'view registrations', 'manage registrations',
-            'approve registrations', 'manage users', 'view reports',
-        ]);
-
-        $lecturer = Role::firstOrCreate(['name' => 'lecturer', 'guard_name' => 'web']);
-        $lecturer->syncPermissions([
-            'view assigned courses', 'view course students', 'enter marks',
-        ]);
-
-        $student = Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
-        $student->syncPermissions([
-            'view available courses', 'register courses', 'view own registrations', 'view own results',
-        ]);
     }
 }
